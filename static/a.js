@@ -146,6 +146,16 @@ function run(type_) {
     }
     // Type can either be 'next line' (> button leading to a new line)
     // or 'start new program' (a button press i.e. a whole new program loaded.)
+
+    // in the case that the code box is just one line, there is no <div> surrounding that one line.
+    // this will cause an error.
+    // therefore we check if $("#codeinputbox") has children elements.
+    if ($("#codeinputbox").children().length === 0 && $("#codeinputbox").text() != "") {
+        var past_oneliner = escapeHTML($("#codeinputbox").text());
+        $("#codeinputbox").text("");
+        $("#codeinputbox").append($(`<div>${past_oneliner}</div>`));
+    }
+    
     $.ajax({
         url: "receive",
         type: "POST",
