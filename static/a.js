@@ -8,7 +8,7 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
 canvas.width = 920;
-canvas.height= 100;
+canvas.height= 90;
 
 let a = [];
 let gap = 20;
