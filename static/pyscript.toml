@@ -1,0 +1,4 @@
+name = "aberdeen"
+[files]
+"./atoms.py" = ""
+"./lang.py" = ""

@@ -1,23 +1,29 @@
-<html>
+<!DOCTYPE html>
 
   <head>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.7.1.min.js"></script>
     <link rel="stylesheet" href="static/styles.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2026.7.3/core.css">
+    <script type="module" src="https://pyscript.net/releases/2026.7.3/core.js"></script>
+
     <link rel="shortcut icon" href="static/favicon.ico">
   </head>
 
-  <body>
-
-
+  <body> 
+    <div class="loader-container">
+      <h1>Loading...</h1>
+      <div class="spinner"></div>
+    </div>
     <div id="header">
       <div class="center">
 
-        <canvas id="canvas">
+        <canvas id="header_canvas">
         </canvas>
 
         <div id="floatatopcanvas">
             <h1 id="mainheader"><span onclick="window.location='/'">aberdeen.cloud</span></h1>
-            <p id="headerdesc">visual interpreter for a simple lisp-style programming language.</p>
+            <p id="headerdesc">visual interpreter for a lisp-style programming language.</p>
         </div>
 
       </div>
@@ -25,19 +31,32 @@
 
     <div id="body" class="center">
 
-      <div class="flexcontainer">
+      <div id="toprowflex" class="flexcontainer">
 
-        <div id="codeinputareadiv">
-          <h3>Code input area</h3>
-          <div id="codeinputbox" contenteditable="true">
-          </div>
+        <div id="linenumbers">
+          <span class="lineN" style="color: white">1</span><br>
         </div>
-        <div id="rundiv">
-          <button class="runbutton" onclick="run(START_NEW_PROGRAM)">Load program</button>
+        <div id="codeinputareadiv">
+          <textarea id="codeinputbox" contenteditable="true">(set "x" 5);
+(set "tmp_value" 1);
+(set "i" 1);
+(while (! (= $i (+ $x 1)))
+    (set "tmp_value" (* $tmp_value $i))
+    (set "i" (+ $i 1)));
+(print "factorial of " $x " is " $tmp_value);</textarea>
+
+          <div id="runbuttonbar">
+            <button id="runprogrambutton">Run program</button>
+            <button>Run line</button>
+            <button id="nextnodebutton">Step through node</button>
+            <button id="loadbutton" style="background-color: green; color: white">Load</button>
+            <button id="stopbutton" style="background-color: red; color: white">Stop</button>
+          </div>
+
+
         </div>
         <div id="visualiserdiv">
-          <h3>Visualiser</h3>
-          <canvas id="secondcanvas"></canvas>
+          <canvas id="ast_canvas"></canvas>
         </div>
       </div>
 
@@ -54,13 +73,24 @@
 
           <div>
                 <code><pre>
-(set "x" 10);
-(set "t" 1);
-(set "i" 1);
-(while (! (= $i (+ $x 1)))
-    (set "t" (* $t $i))
-    (set "i" (+ $i 1)));
-(print "factorial of " $x " is " $t);</pre>
+(set "n" 1);
+
+(while (< $n 10000)
+    (set "i" 2)
+
+    (set "prime" "none")
+
+    (while (< $i $n)
+        (if (= (% $n $i) 1)
+            (set "prime" "no"))
+        (set "i" (+ $i 2)))
+
+    (if (= $prime "none")
+        (set "prime" "yes")
+
+        (print "{}{}" $n $prime))
+    (set "n" (+ $n 2)));
+</pre>
                   </code>
               <button class="copybutton">Copy into code box</button>
           </div>
@@ -82,8 +112,22 @@
         <p></p>
       </div>
     </div>
+    <script type="py" src="static/clientside.py" config="static/pyscript.toml"></script>
+    <script>
+      $("#ast_canvas").height($("#codeinputareadiv").height())
+      $("#ast_canvas").width(
+        $("#toprowflex").width()
+        - ($("#linenumbers").width() + $("#codeinputareadiv").width())
+        - 30)
+      $("#examplecodebox").width($("#linenumbers").width()+$("#codeinputareadiv").width() + 22)
+
+      const loaderContainer = document.querySelector('.loader-container');
+      window.addEventListener('custom_event_', () => {
+        loaderContainer.style.display = 'none';
+      });
+    </script>
+
   </body>
 
 
-  <script src="static/a.js"></script>
 </html>

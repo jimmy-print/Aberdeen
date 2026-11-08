@@ -5,6 +5,15 @@
     padding-bottom: 1.5rem;
 }
 
+#header_canvas {
+    width: 920px;
+    height: 90px;
+}
+
+#toprowflex {
+    margin-top: 1.5rem;
+}
+
 #mainheader span:hover {
     text-decoration: underline;
 }
@@ -32,6 +41,7 @@ h1 {
     font-size: 2.5rem;
     color: white;
     margin: 0px;
+    font-style: italic;
 }
 
 #header p{
@@ -54,24 +64,40 @@ body {
     padding: 0px;
 }
 
+#linenumbers {
+    padding-top: 3.5px;
+}
+
+.lineN {
+    font-family: Consolas, monospace;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 5px;
+    padding-right: 5px;
+    color: grey;
+}
+
+
 #codeinputbox {
     font-size: 1rem;
-    font-family: monospace;
+    font-family: 'Consolas', Courier, monospace;
     height: 370px;
     width: 400px;
-    border: 1px solid grey;
+    border-top: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey;
+    border-right: 1px solid lightgrey;
+    border-left: 1px solid lightgrey;
     padding-left: 10px;
 }
 
+
+textarea:focus, input:focus{
+    outline: none;
+}
+
 #codeinputbox:focus {
-    border: 1px solid black;
-
+    border: 1px solid grey;
 }
-
-[contenteditable] {
-    outline: 0px solid transparent;
-}
-
 
 .flexcontainer {
     display: flex;
@@ -87,11 +113,11 @@ body {
 
 #visualiserdiv {
     flex-grow: 1;
+    margin-left: 1.5rem;
 }
 
-#secondcanvas {
+#ast_canvas {
     background-color: #eeeeee;
-    width: 100%;
 }
 
 #floatatopcanvas {
@@ -100,7 +126,7 @@ body {
 }
 
 #body h3 {
-    margin-top: 2rem;
+    margin-top: 30px;
     margin-bottom: 10px;
 
     font-size: 1.1rem;
@@ -140,4 +166,35 @@ body {
 
 .copybutton {
     margin-bottom: 15px;
+}
+
+
+
+
+.spinner {
+    width: 64px;
+    height: 64px;
+    border: 8px solid;
+    border-color: #3d5af1 transparent #3d5af1 transparent;
+    border-radius: 50%;
+    animation: spin-anim 1.2s linear infinite;
+}
+
+@keyframes spin-anim {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+.loader-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
 }

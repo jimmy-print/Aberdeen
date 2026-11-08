@@ -1,18 +1,14 @@
-(set 1 2)
-Technically allowed in lang but will lead to
-  File "/usr/lib/python3.8/json/encoder.py", line 258, in iterencode
-    return _iterencode(o, 0)
-TypeError: '<' not supported between instances of 'int' and 'str' 
-
-As flask will attempt to parse global_variables = {1:2} into json, where integer keys aren't allowed.
-
-
-Vulnerable to XSS right now, because through #codeinputbox, all sorts of stuff may be appended to DOM. No stored XSS though, just reflected session stuff. This server also doesn't store any sensitive data.
-
-
-Highlighting text not perfect, (print (multiply 1 2)), when on multiply node, only (m is being highlighted. (+ 1 2 3 4 5) also leads to errors.
-
-
-Seriously lack testing
+    Old aberdeen (server-side execution):
+Highlighting text not perfect, (print (multiply 1 2)),
+when on multiply node, only (m is being highlighted. (+ 1 2 3 4 5) also leads to errors.
 
 Also wrong input, syntax errors, lead to server side errors, not handled and shown to client.
+
+---
+    Client-side interpreter lang.py:
+Lack testing. Tests could easily be done on example programs such as prime number generator 
+on large numbers. Compare output of lang.py and the true values.
+---
+    For all parts:
+Lack documentation generally. Many functions are hodgepiles of messy variable names and
+un-comprehendable logic flow.
