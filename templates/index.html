@@ -45,18 +45,21 @@
     (set "i" (+ $i 1)));
 (print "factorial of " $x " is " $tmp_value);</textarea>
 
+	  <img id="lockimg" src="static/lock.svg">
           <div id="runbuttonbar">
-            <button id="runprogrambutton">Run program</button>
-            <button>Run line</button>
-            <button id="nextnodebutton">Step through node</button>
-            <button id="loadbutton" style="background-color: green; color: white">Load</button>
-            <button id="stopbutton" style="background-color: red; color: white">Stop</button>
+		  <button class="button-3 greenbutton" id="loadbutton">Load</button>
+            <button class="button-3" id="stopbutton" style="background-color: red; color: white">Stop</button>
           </div>
 
 
         </div>
         <div id="visualiserdiv">
           <canvas id="ast_canvas"></canvas>
+	  <div id="controlbuttonsbar">
+		<button class="button-3" id="runprogrambutton">Step through whole program</button>
+            <button class="button-3" id="nextlinebutton">Step through line</button>
+            <button class="button-3" id="nextnodebutton">Step to next node</button>
+	</div>
         </div>
       </div>
 
@@ -73,23 +76,20 @@
 
           <div>
                 <code><pre>
-(set "n" 1);
+(set "num" 5);
+(set "i" 2);
+(set "prime" "not sure");
 
-(while (< $n 10000)
-    (set "i" 2)
-
-    (set "prime" "none")
-
-    (while (< $i $n)
-        (if (= (% $n $i) 1)
+(while (< $i $num)
+        (if (= (% $num $i) 0)
             (set "prime" "no"))
-        (set "i" (+ $i 2)))
+        (set "i" (+ $i 2)));
 
-    (if (= $prime "none")
+(if (= $prime "not sure")
         (set "prime" "yes")
-
-        (print "{}{}" $n $prime))
-    (set "n" (+ $n 2)));
+	(print $num " is prime"));
+(if (= $prime "no")
+        (print $num " is not prime"));
 </pre>
                   </code>
               <button class="copybutton">Copy into code box</button>
@@ -114,7 +114,7 @@
     </div>
     <script type="py" src="static/clientside.py" config="static/pyscript.toml"></script>
     <script>
-      $("#ast_canvas").height($("#codeinputareadiv").height())
+      $("#ast_canvas").height($("#codeinputbox").height() + 3)
       $("#ast_canvas").width(
         $("#toprowflex").width()
         - ($("#linenumbers").width() + $("#codeinputareadiv").width())

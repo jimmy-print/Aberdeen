@@ -387,8 +387,6 @@ def run(tree):
 
                 orig_while_node = get_with_stack(orig_tree, while_stack)
 
-                #print(orig_while_node)
-                
                 lowers = []
                 for i, O in enumerate(iterate_through_node_not_root(orig_while_node)):
                     if i != 0:
@@ -439,7 +437,6 @@ def run_onestep(tree, orig_tree, stack):
             last_arg_node = get_with_stack(tree, last_arg_node_stack)
 
 
-            print('\t\t\there',last_arg_node)
             parent_func_node = last_arg_node.parent
             parent_func_node_stack = list(last_arg_node_stack)
             parent_func_node_stack.pop()
@@ -524,7 +521,6 @@ def run_onestep(tree, orig_tree, stack):
                 stack.pop()
                 stack[-1] += 1
                 
-        print(get_with_stack(tree, stack))
         if print_msg is None:
             if get_with_stack(tree, stack) == INDEX_TOO_BIG:
                 return ONESTEP_DONE_NO_PRINT, None, (None, None)

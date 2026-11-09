@@ -10,15 +10,34 @@ from pyscript import window, document
 from pyscript import when
 from pyscript import web
 
-NO_EXECUTION_SPECIAL = -100000  # represents the state of no program having been loaded
+
 all_code_ast = []
 all_code_vis = []
+NO_EXECUTION_SPECIAL = -100000  # represents the state of no program having been loaded
 stack = NO_EXECUTION_SPECIAL
 on_line = NO_EXECUTION_SPECIAL
+EDITING = 'EDITING'
+RUNNING = 'RUNNING'
+state = EDITING
+def edit_to_run():
+    global all_code_ast, all_code_vis, stack, on_line, state
+    state = RUNNING
+    on_line = 0
+    stack = [0]
+    update_visual_representation(do_lines())
+    atoms.global_variables = {}
+def run_to_edit():
+    global all_code_ast, all_code_vis, stack, on_line, state
+    state = EDITING
+    on_line = NO_EXECUTION_SPECIAL
+    stack = NO_EXECUTION_SPECIAL
+    all_code_vis, all_code_ast = [], []
+    atoms.global_variables = {}
+
+
 indice = [-1, -1]  # default values to prevent
 # text from being highlighted when website just loaded.
 current_highlight_action_completed = False
-running = False
 
 debug = True
 
@@ -163,14 +182,13 @@ def update_visual_representation(raw_code):
 
 
 code_input_box = web.page.find("#codeinputbox")[0]
-@when ("click", "#loadbutton")
+@when("click", "#loadbutton")
 def callback_load_button():
-    global on_line, running, stack
-    update_visual_representation(do_lines())
-    on_line = 0
-    stack = [0]
-    running = True
-    atoms.global_variables = {}
+    edit_to_run()
+
+@when("click", "#stopbutton")
+def callback_stop_button():
+    run_to_edit()
 
 @when("input", "#codeinputbox")
 def do_lines():
@@ -185,8 +203,7 @@ def do_lines():
     lines_root_elem.innerHTML = to_insert;
 
     return raw_code
-#callback(None)  # for the first line number to be inserted upon webpage load.
-do_lines()
+do_lines()  # for the first line number to be inserted upon webpage load.
 
 
 def assign_copybuttons_onclick():
@@ -196,13 +213,8 @@ def assign_copybuttons_onclick():
         # of it being overwritten by the last one in the loop
         def factory(COPY):
             def copy_button_onclick_function(__):
-                global running, on_line, all_code_vis, all_code_ast, stack
-                running = False
-                on_line = NO_EXECUTION_SPECIAL
-                stack = [0]
-                all_code_ast = []
-                all_code_vis = []
-
+                run_to_edit()
+                
                 raw_code = COPY.parentElement.children[0].innerText;
                 tmp = ''
                 splitted = raw_code.split(';')
@@ -256,7 +268,7 @@ def next_node():
 
 
 async def run_canvases():
-    global on_line, indice, current_highlight_action_completed, all_code_ast, all_code_vis, running, stack
+    global on_line, indice, current_highlight_action_completed, all_code_ast, all_code_vis
 
     header_canvas = web.page.find("#header_canvas")[0]
     def randomHsl():
@@ -328,40 +340,33 @@ async def run_canvases():
 
         # if on_line is greater than all_code_* variables' length:
         # this means that the entire program has finished running
-        # we set all_code_vis and all_code_ast to empty.
         if on_line == len(all_code_vis):
             assert on_line == len(all_code_ast)
             # as the two lists should always be the same size.
-            all_code_vis, all_code_ast = [], []
-            on_line = NO_EXECUTION_SPECIAL
-            stack = [0]
-            running = False
+            run_to_edit()
 
-        if running:
-            print(on_line)
+        if state == RUNNING:
             for coord in all_code_vis[on_line]['coords']:
+                node_is_being_ran = list(coord[3]) == stack[1:len(stack)]
+                # need to chop off initial element in global currently-on-stack
+                # when comparing to each coord's own stack.
+                # this is because global currently-on-stack variable ("stack") is 
+                # assuming a rooted tree.
+                # then, the individual stack in each coord for each node is
+                # generated when the tree is still unrooted. Hence it lacks the 0 at the start of [0, ... ]
+
                 ast_ctx.beginPath()
                 ast_ctx.rect(coord[0], coord[1], node_size:=5, node_size:=5)
                 ast_ctx.fillStyle = '#9ab0ff'
                 ast_ctx.fill()
-                ast_ctx.fillStyle = '#222222'
-                ast_ctx.font = '15px Arial'
-                ast_ctx.fillText(coord[2], coord[0], coord[1])
+                ast_ctx.font = '15px Consolas'
+                if node_is_being_ran:
+                    s = '█' * len(str(coord[2]))
+                    ast_ctx.fillStyle = '#FF0000'
+                    ast_ctx.fillText(s, coord[0], coord[1])
 
-                # Highlight the node that is being executed with a red circle.
-                #print(list(coord[3]), stack[1: len(stack)])
-                if list(coord[3]) == stack[1:len(stack)]:
-                    # need to chop off initial element in global currently-on-stack
-                    # when comparing to each coord's own stack.
-                    # this is because global currently-on-stack variable ("stack") is 
-                    # assuming a rooted tree.
-                    # then, the individual stack in each coord for each node is
-                    # generated when the tree is still unrooted. Hence it lacks the 0 at the start of [0, ... ]
-                    ast_ctx.beginPath()
-                    ast_ctx.arc(coord[0] + (node_size / 2), coord[1] + (node_size / 2), highlight_radius, 0, 2 * 3.1415926)
-                    ast_ctx.lineWidth = 2.5;
-                    ast_ctx.strokeStyle = '#FF0000'
-                    ast_ctx.stroke()
+                ast_ctx.fillStyle = '#222222'  if not node_is_being_ran else '#FFFFFF'
+                ast_ctx.fillText(coord[2], coord[0], coord[1])
 
             # draw lines between nodes.
             for line in all_code_vis[on_line]['lines']:
@@ -372,7 +377,12 @@ async def run_canvases():
                 ast_ctx.strokeStyle = '#222222'
                 ast_ctx.stroke()
 
-        web.page.find("#codeinputbox")[0].disabled = running
+        if state == RUNNING:
+            web.page.find("#codeinputbox")[0].disabled = True
+            js.document.getElementById("lockimg").style.display = 'block';
+        elif state == EDITING:
+            web.page.find("#codeinputbox")[0].disabled = False
+            js.document.getElementById("lockimg").style.display = 'none';
 
         # Display which line is being ran in the AST canvas
         raw_code = web.page.find("#codeinputbox")[0].value
@@ -380,14 +390,14 @@ async def run_canvases():
         # the last ; generates a trailing empty element
         top_level_functions.pop() if top_level_functions[-1] == '' else None
 
-        if on_line != NO_EXECUTION_SPECIAL:
+        if state == RUNNING:
             current_line = top_level_functions[on_line].strip()
             ast_ctx.beginPath()
             ast_ctx.fillStyle = "#000000"
             ast_ctx.font = "15px consolas"
             display_char_limit = 35  # ast_canvas width is too narrow to always preview the whole line.
 
-            ast_ctx.fillText(f'On function #{on_line+1}: {current_line if len(current_line) < 20 else f"{current_line[:display_char_limit]}, ..."}', 10, 20)
+            ast_ctx.fillText(f'Executing function #{on_line+1}: {current_line if len(current_line) < 20 else f"{current_line[:display_char_limit]}, ..."}', 10, 20)
             ast_ctx.stroke()
 
         # Highlight the line that is being executed in the line numbers bar.
@@ -427,7 +437,13 @@ async def run_canvases():
                             ast_ctx.fillText(f'Located on line {display_line_num}', 10, 40)
                             span_elem.style = 'color: #00DD00; text-decoration: underline; font-weight: bold;'
                         else:
-                            span_elem.style = 'color: grey;'
+                            span_elem.style = 'color: grey'
+
+        if state == EDITING:
+            # reset the green line number when running has stopped.
+            # just reset all of them.
+            for span_elem in web.page.find("#linenumbers")[0].children:
+                span_elem.style = 'color: grey'
 
 
         # Display variables
@@ -441,15 +457,17 @@ async def run_canvases():
 
         # Debug
         if debug:
-            ast_ctx.fillText(f'On_line: {on_line}', 300, 250)
+            ast_ctx.fillText(f'Debug vars', 50, 330)
+            ast_ctx.fillText(f'On_line: {on_line}', 50, 350)
 
 
         # assert consistency of state variables.
-        if not running:
+        if state == EDITING:
+            assert stack == NO_EXECUTION_SPECIAL
             assert on_line == NO_EXECUTION_SPECIAL
             assert all_code_ast == []
             assert all_code_vis == []
-        else:
+        elif state == RUNNING:
             assert on_line != NO_EXECUTION_SPECIAL
 
 
